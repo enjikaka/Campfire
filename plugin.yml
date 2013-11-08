@@ -1,5 +1,5 @@
 name: Campfire
-main: se.enji.Campfire
+main: se.enji.campfire.Campfire
 author: enjikaka
-website: http://enji.se
-version: 2.7
+website: http://minecraft.enji.se
+version: 2.9

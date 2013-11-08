@@ -1,8 +1,8 @@
-package se.enji;
+package se.enji.campfire;
 
 import java.io.File;
-import java.util.logging.Logger;
 
+import org.bukkit.CoalType;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
@@ -16,23 +16,12 @@ import org.bukkit.event.block.BlockBurnEvent;
 import org.bukkit.event.block.BlockPistonExtendEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.material.Coal;
 import org.bukkit.plugin.java.JavaPlugin;
 
-public class Campfire extends JavaPlugin implements Listener {
+public final class Campfire extends JavaPlugin implements Listener {
 	FileConfiguration config;
-	Logger log = Logger.getLogger("Minecraft");
-	public static boolean treeBurn;
-	public static boolean treeBurn2;
-	public static int i;
-    public static int xvalue = 0;
-    public static int yvalue = 0;
-    public static int zvalue = 0;
-    public static int x2value = 0;
-    public static int z2value = 0;
-    public static int dropvalueX = 0;
-    public static int dropvalueZ = 0;
-    public static int firevalueX = 0;
-    public static int firevalueZ = 0;
+	public static boolean treeBurn, treeBurn2;
 	
 	public void onEnable() {
 		config = getConfig();
@@ -52,35 +41,34 @@ public class Campfire extends JavaPlugin implements Listener {
     	if (!blockCanBeUsedWithFire(block)) {
     		if (block.getType() != Material.FIRE) return;
     	}
-    	xvalue = block.getX();
-    	yvalue = block.getY();
-    	zvalue = block.getZ();
+    	int xvalue = block.getX(), yvalue = block.getY(), zvalue = block.getZ();
     	int dir = getDirection(event.getPlayer());
     	Location locFu = new Location(world, xvalue + 2, yvalue, zvalue);
 	    switch (dir) {
-	    	case 90:
-	    		locFu = new Location(world, xvalue + 2, yvalue, zvalue);
-	    		break;
 	    	case 360:
-	    		locFu = new Location(world, xvalue, yvalue, zvalue - 2);
+	    		locFu.setZ(zvalue - 2);
 	    		break;
 	    	case 180:
-	    		locFu = new Location(world, xvalue, yvalue, zvalue + 2);
+	    		locFu.setZ(zvalue + 2);
 	    		break;
 	    	case 270:
-	    		locFu = new Location(world, xvalue - 2, yvalue, zvalue);
+	    		locFu.setX(xvalue - 2);
 	    		break;
 	    	case 315:
-	    		locFu = new Location(world, xvalue - 1, yvalue, zvalue - 1);
+	    		locFu.setX(xvalue - 1);
+	    		locFu.setX(zvalue - 1);
 	    		break;
 	    	case 45:
-	    		locFu = new Location(world, xvalue + 1, yvalue, zvalue - 1);
+	    		locFu.setX(xvalue + 1);
+	    		locFu.setX(zvalue - 1);
 	    		break;
 	    	case 135:
-	    		locFu = new Location(world, xvalue + 1, yvalue, zvalue + 1);
+	    		locFu.setX(xvalue + 1);
+	    		locFu.setX(zvalue + 1);
 	    		break;
 	    	case 225:
-	    		locFu = new Location(world, xvalue - 1, yvalue, zvalue + 1);
+	    		locFu.setX(xvalue - 1);
+	    		locFu.setX(zvalue + 1);
 	    		break;
 	    }
 	    Block toBeBurned = null;
@@ -118,7 +106,7 @@ public class Campfire extends JavaPlugin implements Listener {
 				}
 				break;
 			case "CLAY":
-				dropItFu(Material.BRICK, drop, event, block);
+				dropItFu(Material.HARD_CLAY, drop, event, block);
 				break;
 			case "SAND":
 				dropItFu(Material.GLASS, drop, event, block);
@@ -137,9 +125,12 @@ public class Campfire extends JavaPlugin implements Listener {
   		World world = event.getBlock().getWorld();
 	    Block block = event.getBlock();
 	    BlockFace dir = event.getDirection();
-	    x2value = dir.getModX();
-	    z2value = dir.getModZ();
-	    yvalue = block.getY();
+	    int x2value = dir.getModX(), z2value = dir.getModZ();
+	    int firevalueX = block.getX();
+	    int firevalueZ = block.getZ();
+	    int dropvalueX = block.getX();
+	    int dropvalueZ = block.getZ();
+	    int xvalue = block.getX(), yvalue = block.getY(), zvalue = block.getZ();
 	    
 	    if (z2value == -1) {
 	    	xvalue = block.getX() + x2value;
@@ -198,7 +189,7 @@ public class Campfire extends JavaPlugin implements Listener {
 	    			dropItPi(Material.COAL, dl, gb, event, block);
 	    			break;
 	    		case "CLAY":
-	    			dropItPi(Material.BRICK, dl, gb, event, block);
+	    			dropItPi(Material.HARD_CLAY, dl, gb, event, block);
 	    			break;
 	    		case "NETHERRACK":
 	    			dropItPi(Material.NETHER_BRICK, dl, gb, event, block);
@@ -225,20 +216,20 @@ public class Campfire extends JavaPlugin implements Listener {
 	private void addNode(String o, Object p) {
 		File configFile = new File("plugins" + File.separator + this.getDescription().getName() + File.separator + "config.yml");
 		config.addDefault(o, p);
-		if (configFile.exists() == false) {
+		if (!configFile.exists()) {
 			config.set(o, p);
 		}
 	}
 	
 	public void dropItFu(Material m, Location l, BlockPlaceEvent e, Block b) {
-	    e.getPlayer().getWorld().dropItemNaturally(l, new ItemStack(m, 1));
+		ItemStack i = new ItemStack(m, 1);
+		if (m == Material.COAL) {
+			Coal c = new Coal();
+			c.setType(CoalType.CHARCOAL);
+			i = c.toItemStack(1);
+		}
+	    e.getPlayer().getWorld().dropItemNaturally(l, i);
 	    Block f = b.getWorld().getBlockAt(l);
-	    f.setType(Material.AIR);
-    }
-  
-    public void dropItFo(Material m, Location l, BlockPlaceEvent e, Block b) {
-	    e.getPlayer().getWorld().dropItemNaturally(l, new ItemStack(m, 1));
-	    Block f = b.getWorld().getBlockAt(b.getLocation().getBlockX(), b.getLocation().getBlockY() - 1, b.getLocation().getBlockZ());
 	    f.setType(Material.AIR);
     }
   
@@ -249,34 +240,11 @@ public class Campfire extends JavaPlugin implements Listener {
     }
     
     private boolean blockCanBeUsedWithFire(Block b) {
-    	boolean returnValue = false;
-    	switch (b.getType().name()) {
-	    	case "GOLD_ORE":
-	    		returnValue = true;
-				break;
-			case "IRON_ORE":
-				returnValue = true;
-				break;
-			case "COBBLESTONE":
-				returnValue = true;
-				break;
-			case "LOG":
-				returnValue = true;
-				break;
-			case "CLAY":
-				returnValue = true;
-				break;
-			case "SAND":
-				returnValue = true;
-				break;
-			case "NETHERRACK":
-				returnValue = true;
-				break;
-			default:
-				returnValue = false;
-				break;
+    	String[] supported = {"GOLD_ORE","IRON_ORE","COBBLESTONE","LOG","CLAY","SAND","NETHERRACK"};
+    	for (int i = 0; i < supported.length; i++) {
+    		if (supported[i] == b.getType().name()) return true;
     	}
-    	return returnValue;
+    	return false;
     }
     
     private int getDirection(Player player) {

@@ -47,8 +47,10 @@ public final class Campfire extends JavaPlugin implements Listener {
 	    switch (dir) {
 	    	case 360:
 	    		locFu.setZ(zvalue - 2);
+	    		locFu.setX(xvalue);
 	    		break;
 	    	case 180:
+	    		locFu.setX(xvalue);
 	    		locFu.setZ(zvalue + 2);
 	    		break;
 	    	case 270:
@@ -81,6 +83,7 @@ public final class Campfire extends JavaPlugin implements Listener {
 	    	}
 	    	if (blockCanBeUsedWithFire(world.getBlockAt(xvalue, yvalue - 1, zvalue))) {
 	    		toBeBurned = world.getBlockAt(xvalue, yvalue - 1, zvalue);
+	    		if (toBeBurned.getType() == Material.NETHERRACK && block.getType() == Material.FIRE) return;
 	    		drop = world.getBlockAt(xvalue, yvalue - 1, zvalue).getLocation();
 	    	}
 	    } else if (world.getBlockAt(xvalue, yvalue - 1, zvalue).getType() == Material.FIRE) {
@@ -234,9 +237,15 @@ public final class Campfire extends JavaPlugin implements Listener {
     }
   
     public void dropItPi(Material m, Location l, Location g, BlockPistonExtendEvent e, Block b) {
+    	ItemStack i = new ItemStack(m, 1);
+    	if (m == Material.COAL) {
+			Coal c = new Coal();
+			c.setType(CoalType.CHARCOAL);
+			i = c.toItemStack(1);
+		}
     	Block burningBlock = b.getWorld().getBlockAt(g); 
 	    burningBlock.setType(Material.FIRE);
-	    e.getBlock().getWorld().dropItemNaturally(l, new ItemStack(m, 1));
+	    e.getBlock().getWorld().dropItemNaturally(l, i);
     }
     
     private boolean blockCanBeUsedWithFire(Block b) {

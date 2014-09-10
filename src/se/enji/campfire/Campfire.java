@@ -20,17 +20,23 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 public final class Campfire extends JavaPlugin implements Listener {
 	private FileConfiguration config;
-	private static boolean treeBurn, treeBurn2;
+	private static boolean dropCoalWhenTreeBurn, fireAboveWood;
 	
 	public void onEnable() {
-		config=getConfig();
-		addNode("dropCoalWhenTreeBurn",true);
-		addNode("fireAboveWoodEnabled",true);
+		config = getConfig();
+		addNode("dropCoalWhenTreeBurn", true);
+		addNode("fireAboveWoodEnabled", true);
 		config.options().copyDefaults(true);
 		saveConfig();
 		getServer().getPluginManager().registerEvents(this,this);
-		treeBurn=getNode("dropCoalWhenTreeBurn");
-		treeBurn2=getNode("fireAboveWoodEnabled");
+		dropCoalWhenTreeBurn = getNode("dropCoalWhenTreeBurn");
+		fireAboveWood = getNode("fireAboveWoodEnabled");
+	}
+
+	private ItemStack makeCoal() {
+		Coal coal = new Coal();
+		coal.setType(CoalType.CHARCOAL);
+		return coal.toItemStack(1);
 	}
 	
 	@EventHandler
@@ -61,59 +67,58 @@ public final class Campfire extends JavaPlugin implements Listener {
 	    } else return;
 	    if (toBeBurned == null) return;
 	    Material toBurnType = toBeBurned.getType();
-	    if (toBurnType == Material.LOG && dropLocation.equals(playerLocation) && !Campfire.treeBurn2) return;
-	    dropItFu(getResult(toBurnType),dropLocation,event,block);
+	    if (toBurnType == Material.LOG && dropLocation.equals(playerLocation) && !Campfire.fireAboveWood) return;
+	    dropNormal(getResult(toBurnType),dropLocation,event,block);
 	    if (dropLocation == playerLocation) toBeBurned.setType(Material.AIR);
 	}
 	
 	@EventHandler
-	public void onBlockPistonExtend(BlockPistonExtendEvent event) {
-  		World world=event.getBlock().getWorld();
-	    Block block=event.getBlock();
-	    BlockFace dir=event.getDirection();
-	    int nxv=dir.getModX(),nzv=dir.getModZ();
-	    int fvx=block.getX()+nxv,fvz=block.getZ()+nzv;
-	    int dvx=block.getX(),dvz=block.getZ();
-	    int xv=fvx,zv=fvz,yv=block.getY();
-	    if (nxv==1||nxv==-1||nzv==1||nzv==-1) {
-	    	dvx=fvx;
-	    	dvz=fvz;
-	    	if (nxv==1) {
-	    		fvx=xv+1;
-	    		dvz=fvz+2;
-		    	dvx+=2;
-	    	} else if (nxv==-1) {
-	    		fvx=xv-1;
-	    		dvz=fvz-2;
-		    	dvx-=2;
-	    	}else if (nzv==1) {
-	    		dvx=fvx-2;
-	    		dvz+=2;
-	    		fvz=zv+1;
-	    	} else if (nzv==-1) {
-	    		dvx=fvx+2;
-	    		dvz-=2;
-	    		fvz=zv-1;
+	public void onBlockPistonExtend(BlockPistonExtendEvent evt) {
+  		World world = evt.getBlock().getWorld();
+	    Block block = evt.getBlock();
+	    BlockFace dir = evt.getDirection();
+	    int modX = dir.getModX(),
+	    	modZ = dir.getModZ();
+	    int xModX = block.getX() + modX,
+	    	zModZ = block.getZ() + modZ;
+	    int blockX = block.getX(), 
+	    	blockZ = block.getZ();
+	    int posX = xModX,
+	    	posZ = zModZ,
+	    	posY = block.getY();
+	    if (modX == 1 || modX == -1 || modZ == 1 || modZ == -1) {
+	    	blockX = xModX;
+	    	blockZ = zModZ;
+	    	if (modX == 1) {
+	    		xModX = posX + 1;
+	    		blockZ = zModZ + 2;
+		    	blockX += 2;
+	    	} else if (modX==-1) {
+	    		xModX = posX - 1;
+	    		blockZ = zModZ - 2;
+		    	blockX -= 2;
+	    	} else if (modZ == 1) {
+	    		blockX = xModX - 2;
+	    		blockZ += 2;
+	    		zModZ =posZ + 1;
+	    	} else if (modZ ==- 1) {
+	    		blockX = xModX + 2;
+	    		blockZ -= 2;
+	    		zModZ = posZ - 1;
 	    	}
 	    }
-	    Location dl=new Location(world,dvx,yv,dvz);
-	    Location gb=new Location(world,xv,yv,zv);
-	    Block burnBlock=world.getBlockAt(xv,yv,zv);
+	    Block burnBlock = world.getBlockAt(posX, posY, posZ);
 	    if (!blockCanBeUsedWithFire(burnBlock)) return;
-	    if (world.getBlockAt(fvx,yv-1,fvz).getType()==Material.FIRE) dropItPi(getResult(burnBlock.getType()),dl,gb,event,block);
+	    if (world.getBlockAt(xModX, posY - 1, zModZ).getType() == Material.FIRE) dropPiston(getResult(burnBlock.getType()), new Location(world, blockX, posY, blockZ), new Location(world, posX, posY, posZ), evt, block);
 	}
 	
 	@EventHandler
-	public void onBlockBurn(BlockBurnEvent event) {
-		World world=event.getBlock().getWorld();
-	    Block block=event.getBlock();
+	public void onBlockBurn(BlockBurnEvent evt) {
+		World world = evt.getBlock().getWorld();
+	    Block block = evt.getBlock();
 	    if (!isTree(block.getType())) return;
-	    if (Campfire.treeBurn) {
-	    	Coal c=new Coal();
-			c.setType(CoalType.CHARCOAL);
-		    ItemStack coal=c.toItemStack(1);
-		    Location dropLocation=new Location(world,block.getX(),block.getY(),block.getZ());
-		    event.getBlock().getWorld().dropItemNaturally(dropLocation, coal);
+	    if (Campfire.dropCoalWhenTreeBurn) {
+		    evt.getBlock().getWorld().dropItemNaturally(new Location(world, block.getX(), block.getY(), block.getZ()), makeCoal());
 	    }
 	}
 	
@@ -122,27 +127,21 @@ public final class Campfire extends JavaPlugin implements Listener {
 	}
 	
 	private void addNode(String o, Object p) {
-		File configFile = new File("plugins"+File.separator+this.getDescription().getName()+File.separator+"config.yml");
+		File configFile = new File("plugins" + File.separator + this.getDescription().getName() + File.separator + "config.yml");
 		config.addDefault(o, p);
 		if (!configFile.exists()) {
 			config.set(o, p);
 		}
 	}
 	
-	private ItemStack makeCoal() {
-		Coal coal = new Coal();
-		coal.setType(CoalType.CHARCOAL);
-		return coal.toItemStack(1);
-	}
-	
-	public void dropItFu(Material mat, final Location loc, BlockPlaceEvent evt, Block block) {
+	public void dropNormal(Material mat, final Location loc, BlockPlaceEvent evt, Block block) {
 		ItemStack itemStack = (mat == Material.COAL) ? makeCoal() : new ItemStack(mat, 1);
 	    evt.getPlayer().getWorld().dropItemNaturally(loc, itemStack);
 	    Block airBlock = block.getWorld().getBlockAt(loc);
 	    airBlock.setType(Material.AIR);
     }
   
-    public void dropItPi(Material mat, Location loc, Location locTwo, BlockPistonExtendEvent evt, Block block) {
+    public void dropPiston(Material mat, Location loc, Location locTwo, BlockPistonExtendEvent evt, Block block) {
     	ItemStack itemStack = (mat == Material.COAL) ? makeCoal() : new ItemStack(mat, 1);
     	final Block burningBlock = block.getWorld().getBlockAt(locTwo); 
 	    burningBlock.setType(Material.FIRE);

@@ -36,32 +36,34 @@ public final class Campfire extends JavaPlugin implements Listener {
 	@EventHandler
 	public void onBlockPlace(BlockPlaceEvent event) {
     	Block block = event.getBlockPlaced();
-    	if (!blockCanBeUsedWithFire(block)&&block.getType()!=Material.FIRE) return;
-    	int xv=block.getX(),yv=block.getY(),zv=block.getZ();
-    	World world=event.getPlayer().getWorld();
-    	Location locFu=event.getPlayer().getLocation();
-	    Block toBeBurned=null;
-	    Location drop=null;
+    	if (!blockCanBeUsedWithFire(block) && block.getType() != Material.FIRE) return;
+    	int blockX = block.getX(), 
+    		blockY = block.getY(), 
+    		blockZ = block.getZ();
+    	World world = event.getPlayer().getWorld();
+    	Location playerLocation = event.getPlayer().getLocation();
+	    Block toBeBurned = null;
+	    Location dropLocation = null;
 	    if (block.getType() == Material.FIRE) {
-	    	if (blockCanBeUsedWithFire(world.getBlockAt(xv,yv+1,zv))) {
-	    		toBeBurned = world.getBlockAt(xv,yv+1,zv);
-	    		locFu.setY((double)locFu.getY()+1.0);
-	    		drop=locFu;
+	    	if (blockCanBeUsedWithFire(world.getBlockAt(blockX, blockY + 1, blockZ))) {
+	    		toBeBurned = world.getBlockAt(blockX, blockY + 1, blockZ);
+	    		playerLocation.setY((double) playerLocation.getY() + 1.0);
+	    		dropLocation = playerLocation;
 	    	}
-	    	if (blockCanBeUsedWithFire(world.getBlockAt(xv,yv-1,zv))) {
-	    		toBeBurned=world.getBlockAt(xv,yv-1,zv);
-	    		if (toBeBurned.getType()==Material.NETHERRACK&&block.getType()==Material.FIRE) return;
-	    		drop=world.getBlockAt(xv,yv-1,zv).getLocation();
+	    	if (blockCanBeUsedWithFire(world. getBlockAt(blockX, blockY - 1, blockZ))) {
+	    		toBeBurned = world.getBlockAt(blockX, blockY - 1, blockZ);
+	    		if (toBeBurned.getType() == Material.NETHERRACK && block.getType() == Material.FIRE) return;
+	    		dropLocation = world.getBlockAt(blockX, blockY - 1, blockZ).getLocation();
 	    	}
-	    } else if (world.getBlockAt(xv,yv-1,zv).getType()==Material.FIRE) {
-	    	toBeBurned=block;
-	    	drop=locFu;
+	    } else if (world.getBlockAt(blockX, blockY - 1, blockZ).getType() == Material.FIRE) {
+	    	toBeBurned = block;
+	    	dropLocation = playerLocation;
 	    } else return;
-	    if (toBeBurned==null) return;
-	    Material mtbb=toBeBurned.getType();
-	    if (mtbb==Material.LOG&&drop.equals(locFu)&&!Campfire.treeBurn2) return;
-	    dropItFu(getResult(mtbb),drop,event,block);
-	    if (drop==locFu) toBeBurned.setType(Material.AIR);
+	    if (toBeBurned == null) return;
+	    Material toBurnType = toBeBurned.getType();
+	    if (toBurnType == Material.LOG && dropLocation.equals(playerLocation) && !Campfire.treeBurn2) return;
+	    dropItFu(getResult(toBurnType),dropLocation,event,block);
+	    if (dropLocation == playerLocation) toBeBurned.setType(Material.AIR);
 	}
 	
 	@EventHandler
@@ -127,52 +129,65 @@ public final class Campfire extends JavaPlugin implements Listener {
 		}
 	}
 	
-	public void dropItFu(Material m, final Location l, BlockPlaceEvent e, Block b) { // NOPMD by Jeremy on 2014-01-16 19:29
-		ItemStack i=new ItemStack(m, 1);
-		if (m==Material.COAL) {
-			Coal c=new Coal();
-			c.setType(CoalType.CHARCOAL);
-			i=c.toItemStack(1);
-		}
-	    e.getPlayer().getWorld().dropItemNaturally(l, i);
-	    Block f=b.getWorld().getBlockAt(l);
-	    f.setType(Material.AIR);
+	private ItemStack makeCoal() {
+		Coal coal = new Coal();
+		coal.setType(CoalType.CHARCOAL);
+		return coal.toItemStack(1);
+	}
+	
+	public void dropItFu(Material mat, final Location loc, BlockPlaceEvent evt, Block block) {
+		ItemStack itemStack = (mat == Material.COAL) ? makeCoal() : new ItemStack(mat, 1);
+	    evt.getPlayer().getWorld().dropItemNaturally(loc, itemStack);
+	    Block airBlock = block.getWorld().getBlockAt(loc);
+	    airBlock.setType(Material.AIR);
     }
   
-    public void dropItPi(Material m, Location l, Location g, BlockPistonExtendEvent e, Block b) {
-    	ItemStack i = new ItemStack(m, 1);
-    	if (m==Material.COAL) {
-			Coal c=new Coal();
-			c.setType(CoalType.CHARCOAL);
-			i=c.toItemStack(1);
-		}
-    	final Block burningBlock = b.getWorld().getBlockAt(g); 
+    public void dropItPi(Material mat, Location loc, Location locTwo, BlockPistonExtendEvent evt, Block block) {
+    	ItemStack itemStack = (mat == Material.COAL) ? makeCoal() : new ItemStack(mat, 1);
+    	final Block burningBlock = block.getWorld().getBlockAt(locTwo); 
 	    burningBlock.setType(Material.FIRE);
-	    e.getBlock().getWorld().dropItemNaturally(l, i);
+	    evt.getBlock().getWorld().dropItemNaturally(loc, itemStack);
     }
     
-    private Material getResult(Material m) {
-    	Material rvl;
-    	switch (m) {
-    		case GOLD_ORE:rvl=Material.GOLD_INGOT;break;
-			case IRON_ORE:rvl=Material.IRON_INGOT;break;
-			case COBBLESTONE:rvl=Material.STONE;break;
-			case CLAY:rvl=Material.HARD_CLAY;break;
-			case SAND:rvl=Material.GLASS;break;
-			case NETHERRACK:rvl=Material.NETHER_BRICK;break;
-			default:rvl=Material.COAL;break;
+    private Material getResult(Material material) {
+    	Material returnMaterial;
+    	switch (material) {
+    		case GOLD_ORE:
+    			returnMaterial = Material.GOLD_INGOT;
+    			break;
+			case IRON_ORE:
+				returnMaterial = Material.IRON_INGOT;
+				break;
+			case COBBLESTONE:
+				returnMaterial = Material.STONE;
+				break;
+			case CLAY:
+				returnMaterial = Material.HARD_CLAY;
+				break;
+			case SAND:
+				returnMaterial = Material.GLASS;
+				break;
+			case NETHERRACK:
+				returnMaterial = Material.NETHER_BRICK;
+				break;
+			default:
+				returnMaterial = Material.COAL;
+				break;
 		}
-    	return rvl;
+    	return returnMaterial;
     }
     
     private boolean blockCanBeUsedWithFire(Block b) {
-    	String[] supported={"GOLD_ORE","IRON_ORE","COBBLESTONE","LOG","LOG_2","CLAY","SAND","NETHERRACK"};
-    	for (int i=0;i<supported.length;i++) if (supported[i]==b.getType().name()) return true;
+    	String[] supported= {"GOLD_ORE", "IRON_ORE", "COBBLESTONE", "LOG", "LOG_2", "CLAY", "SAND", "NETHERRACK"};
+    	for (int i = 0; i < supported.length; i++) {
+    		if (supported[i] == b.getType().name()) {
+    			return true;
+    		}
+    	}
     	return false;
     }
     
-    private boolean isTree(Material m) {
-    	if (m==Material.LOG||m==Material.LOG_2) return true;
-    	return false;
+    private boolean isTree(Material material) {
+    	return (material == Material.LOG || material == Material.LOG_2) ? true : false;
     }
 }

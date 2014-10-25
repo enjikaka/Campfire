@@ -21,7 +21,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 public final class Campfire extends JavaPlugin implements Listener {
 	private FileConfiguration config;
 	private static boolean dropCoalWhenTreeBurn, fireAboveWood;
-	
+
 	public void onEnable() {
 		config = getConfig();
 		addNode("dropCoalWhenTreeBurn", true);
@@ -38,14 +38,14 @@ public final class Campfire extends JavaPlugin implements Listener {
 		coal.setType(CoalType.CHARCOAL);
 		return coal.toItemStack(1);
 	}
-	
+
 	@EventHandler
 	public void onBlockPlace(BlockPlaceEvent event) {
     	Block block = event.getBlockPlaced();
     	if (!blockCanBeUsedWithFire(block) && block.getType() != Material.FIRE) return;
-    	int blockX = block.getX(), 
-    		blockY = block.getY(), 
-    		blockZ = block.getZ();
+    	int blockX = block.getX(),
+          blockY = block.getY(),
+          blockZ = block.getZ();
     	World world = event.getPlayer().getWorld();
     	Location playerLocation = event.getPlayer().getLocation();
 	    Block toBeBurned = null;
@@ -71,21 +71,21 @@ public final class Campfire extends JavaPlugin implements Listener {
 	    dropNormal(getResult(toBurnType),dropLocation,event,block);
 	    if (dropLocation == playerLocation) toBeBurned.setType(Material.AIR);
 	}
-	
+
 	@EventHandler
 	public void onBlockPistonExtend(BlockPistonExtendEvent evt) {
   		World world = evt.getBlock().getWorld();
 	    Block block = evt.getBlock();
 	    BlockFace dir = evt.getDirection();
 	    int modX = dir.getModX(),
-	    	modZ = dir.getModZ();
+          modZ = dir.getModZ();
 	    int xModX = block.getX() + modX,
-	    	zModZ = block.getZ() + modZ;
-	    int blockX = block.getX(), 
-	    	blockZ = block.getZ();
+	    	  zModZ = block.getZ() + modZ;
+	    int blockX = block.getX(),
+	    	  blockZ = block.getZ();
 	    int posX = xModX,
-	    	posZ = zModZ,
-	    	posY = block.getY();
+	    	  posZ = zModZ,
+	    	  posY = block.getY();
 	    if (modX == 1 || modX == -1 || modZ == 1 || modZ == -1) {
 	    	blockX = xModX;
 	    	blockZ = zModZ;
@@ -111,7 +111,7 @@ public final class Campfire extends JavaPlugin implements Listener {
 	    if (!blockCanBeUsedWithFire(burnBlock)) return;
 	    if (world.getBlockAt(xModX, posY - 1, zModZ).getType() == Material.FIRE) dropPiston(getResult(burnBlock.getType()), new Location(world, blockX, posY, blockZ), new Location(world, posX, posY, posZ), evt, block);
 	}
-	
+
 	@EventHandler
 	public void onBlockBurn(BlockBurnEvent evt) {
 		World world = evt.getBlock().getWorld();
@@ -121,11 +121,11 @@ public final class Campfire extends JavaPlugin implements Listener {
 		    evt.getBlock().getWorld().dropItemNaturally(new Location(world, block.getX(), block.getY(), block.getZ()), makeCoal());
 	    }
 	}
-	
+
 	private boolean getNode(String m) {
 		return config.getBoolean(m);
 	}
-	
+
 	private void addNode(String o, Object p) {
 		File configFile = new File("plugins" + File.separator + this.getDescription().getName() + File.separator + "config.yml");
 		config.addDefault(o, p);
@@ -133,21 +133,21 @@ public final class Campfire extends JavaPlugin implements Listener {
 			config.set(o, p);
 		}
 	}
-	
+
 	public void dropNormal(Material mat, final Location loc, BlockPlaceEvent evt, Block block) {
 		ItemStack itemStack = (mat == Material.COAL) ? makeCoal() : new ItemStack(mat, 1);
 	    evt.getPlayer().getWorld().dropItemNaturally(loc, itemStack);
 	    Block airBlock = block.getWorld().getBlockAt(loc);
 	    airBlock.setType(Material.AIR);
     }
-  
+
     public void dropPiston(Material mat, Location loc, Location locTwo, BlockPistonExtendEvent evt, Block block) {
     	ItemStack itemStack = (mat == Material.COAL) ? makeCoal() : new ItemStack(mat, 1);
-    	final Block burningBlock = block.getWorld().getBlockAt(locTwo); 
+    	final Block burningBlock = block.getWorld().getBlockAt(locTwo);
 	    burningBlock.setType(Material.FIRE);
 	    evt.getBlock().getWorld().dropItemNaturally(loc, itemStack);
     }
-    
+
     private Material getResult(Material material) {
     	Material returnMaterial;
     	switch (material) {
@@ -175,7 +175,7 @@ public final class Campfire extends JavaPlugin implements Listener {
 		}
     	return returnMaterial;
     }
-    
+
     private boolean blockCanBeUsedWithFire(Block b) {
     	String[] supported= {"GOLD_ORE", "IRON_ORE", "COBBLESTONE", "LOG", "LOG_2", "CLAY", "SAND", "NETHERRACK"};
     	for (int i = 0; i < supported.length; i++) {
@@ -185,7 +185,7 @@ public final class Campfire extends JavaPlugin implements Listener {
     	}
     	return false;
     }
-    
+
     private boolean isTree(Material material) {
     	return (material == Material.LOG || material == Material.LOG_2) ? true : false;
     }

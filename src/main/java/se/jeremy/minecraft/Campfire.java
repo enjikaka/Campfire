@@ -1,4 +1,4 @@
-package se.enji.campfire;
+package se.jeremy.minecraft;
 
 import java.io.File;
 
@@ -6,14 +6,18 @@ import org.bukkit.CoalType;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
+
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
+
 import org.bukkit.configuration.file.FileConfiguration;
+
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBurnEvent;
 import org.bukkit.event.block.BlockPistonExtendEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
+
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.material.Coal;
 import org.bukkit.plugin.java.JavaPlugin;

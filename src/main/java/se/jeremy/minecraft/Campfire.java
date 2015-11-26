@@ -101,7 +101,7 @@ public final class Campfire extends JavaPlugin implements Listener {
 	    		blockX = xModX - 2;
 	    		blockZ += 2;
 	    		zModZ =posZ + 1;
-	    	} else if (modZ ==- 1) {
+	    	} else {
 	    		blockX = xModX + 2;
 	    		blockZ -= 2;
 	    		zModZ = posZ - 1;
@@ -177,7 +177,7 @@ public final class Campfire extends JavaPlugin implements Listener {
     }
 
     private boolean blockCanBeUsedWithFire(Block b) {
-    	String[] supported= {"GOLD_ORE", "IRON_ORE", "COBBLESTONE", "LOG", "LOG_2", "CLAY", "SAND", "NETHERRACK"};
+    	String[] supported = {"GOLD_ORE", "IRON_ORE", "COBBLESTONE", "LOG", "LOG_2", "CLAY", "SAND", "NETHERRACK"};
     	for (int i = 0; i < supported.length; i++) {
     		if (supported[i] == b.getType().name()) {
     			return true;
@@ -187,6 +187,6 @@ public final class Campfire extends JavaPlugin implements Listener {
     }
 
     private boolean isTree(Material material) {
-    	return (material == Material.LOG || material == Material.LOG_2) ? true : false;
+    	return (material == Material.LOG || material == Material.LOG_2);
     }
 }

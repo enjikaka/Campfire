@@ -11,15 +11,44 @@ You can also make a piston machine with pushes the supported block above fire to
 
 ## Supported Blocks
 
-Burnt Block        Resulting Item
------------------- ----------------
-Gold Ore           Gold Ingot
-Iron Ore           Iron Ingot
-Logs (all types)   Charcoal
-Sand               Glass
-Clay               Hard Clay
-Cobblestone        Stone
-Netherrack         Netherbrick
+<table>
+<thead>
+<tr class="header">
+<th align="left">Burnt Block</th>
+<th align="left">Resulting Item</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">Gold Ore</td>
+<td align="left">Gold Ingot</td>
+</tr>
+<tr class="even">
+<td align="left">Iron Ore</td>
+<td align="left">Iron Ingot</td>
+</tr>
+<tr class="odd">
+<td align="left">Logs (all types)</td>
+<td align="left">Charcoal</td>
+</tr>
+<tr class="even">
+<td align="left">Sand</td>
+<td align="left">Glass</td>
+</tr>
+<tr class="odd">
+<td align="left">Clay</td>
+<td align="left">Hard Clay</td>
+</tr>
+<tr class="even">
+<td align="left">Cobblestone</td>
+<td align="left">Stone</td>
+</tr>
+<tr class="odd">
+<td align="left">Netherrack</td>
+<td align="left">Netherbrick</td>
+</tr>
+</tbody>
+</table>
 
 ## Media
 

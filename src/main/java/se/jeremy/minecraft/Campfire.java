@@ -1,11 +1,6 @@
 package se.jeremy.minecraft;
 
-import java.io.File;
-
-import org.bukkit.CoalType;
-import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.World;
+import org.bukkit.*;
 
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
@@ -22,27 +17,32 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.material.Coal;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import java.util.Arrays;
+import java.util.List;
+import java.util.Set;
+
 public final class Campfire extends JavaPlugin implements Listener {
 	private FileConfiguration config;
 	private static boolean dropCoalWhenTreeBurn, fireAboveWood;
+    private List<Object> resultList;
 
 	public void onEnable() {
 		config = getConfig();
-
-		addNode("dropCoalWhenTreeBurn", true);
-		addNode("fireAboveWoodEnabled", true);
-
 		config.options().copyDefaults(true);
-
-		saveConfig();
 
 		getServer().getPluginManager().registerEvents(this,this);
 
-		dropCoalWhenTreeBurn = getNode("dropCoalWhenTreeBurn");
-		fireAboveWood = getNode("fireAboveWoodEnabled");
-	}
+		dropCoalWhenTreeBurn = config.getBoolean("dropCoalWhenTreeBurn");
+		fireAboveWood = config.getBoolean("fireAboveWoodEnabled");
 
-	private ItemStack makeCoal() {
+        // Load results from config
+        Set<String> resultSet = config.getConfigurationSection("results").getKeys(false);
+        resultList = Arrays.asList(resultSet.toArray());
+
+        saveConfig();
+    }
+
+	private ItemStack charcoal() {
 		Coal coal = new Coal();
 		coal.setType(CoalType.CHARCOAL);
 
@@ -168,26 +168,12 @@ public final class Campfire extends JavaPlugin implements Listener {
 
 	    if (Campfire.dropCoalWhenTreeBurn) {
 			Location dropLocation = new Location(world, block.getX(), block.getY(), block.getZ());
-		    evt.getBlock().getWorld().dropItemNaturally(dropLocation, makeCoal());
+		    evt.getBlock().getWorld().dropItemNaturally(dropLocation, charcoal());
 	    }
 	}
 
-	private boolean getNode(String m) {
-		return config.getBoolean(m);
-	}
-
-	private void addNode(String o, Object p) {
-		File configFile = new File("plugins" + File.separator + this.getDescription().getName() + File.separator + "config.yml");
-
-		config.addDefault(o, p);
-
-		if (!configFile.exists()) {
-			config.set(o, p);
-		}
-	}
-
 	public void dropNormal(Material mat, final Location loc, BlockPlaceEvent evt, Block block) {
-		ItemStack itemStack = (mat == Material.COAL) ? makeCoal() : new ItemStack(mat, 1);
+		ItemStack itemStack = (mat == Material.COAL) ? charcoal() : new ItemStack(mat, 1);
 
 	    evt.getPlayer().getWorld().dropItemNaturally(loc, itemStack);
 
@@ -196,7 +182,7 @@ public final class Campfire extends JavaPlugin implements Listener {
     }
 
     public void dropPiston(Material mat, Location loc, Location locTwo, BlockPistonExtendEvent evt, Block block) {
-    	ItemStack itemStack = (mat == Material.COAL) ? makeCoal() : new ItemStack(mat, 1);
+    	ItemStack itemStack = (mat == Material.COAL) ? charcoal() : new ItemStack(mat, 1);
 
 		final Block burningBlock = block.getWorld().getBlockAt(locTwo);
 	    burningBlock.setType(Material.FIRE);
@@ -205,45 +191,17 @@ public final class Campfire extends JavaPlugin implements Listener {
     }
 
     private Material getResult(Material material) {
-    	Material returnMaterial;
+        int index = resultList.indexOf(material.name());
+        String name = config.getString("results." + resultList.get(index));
 
-    	switch (material) {
-    		case GOLD_ORE:
-    			returnMaterial = Material.GOLD_INGOT;
-    			break;
-			case IRON_ORE:
-				returnMaterial = Material.IRON_INGOT;
-				break;
-			case COBBLESTONE:
-				returnMaterial = Material.STONE;
-				break;
-			case CLAY:
-				returnMaterial = Material.HARD_CLAY;
-				break;
-			case SAND:
-				returnMaterial = Material.GLASS;
-				break;
-			case NETHERRACK:
-				returnMaterial = Material.NETHER_BRICK;
-				break;
-			default:
-				returnMaterial = Material.COAL;
-				break;
-		}
-
-    	return returnMaterial;
+        return Material.getMaterial(name);
     }
 
     private boolean blockCanBeUsedWithFire(Block b) {
-    	String[] supported = {"GOLD_ORE", "IRON_ORE", "COBBLESTONE", "LOG", "LOG_2", "CLAY", "SAND", "NETHERRACK"};
+        String blockName = b.getType().name();
 
-		for (int i = 0; i < supported.length; i++) {
-    		if (supported[i] == b.getType().name()) {
-    			return true;
-    		}
-    	}
 
-    	return false;
+        return resultList.contains(blockName);
     }
 
     private boolean isTree(Material material) {

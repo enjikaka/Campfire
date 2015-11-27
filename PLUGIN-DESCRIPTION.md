@@ -43,10 +43,6 @@ You can also make a piston machine with pushes the supported block above fire to
 <td align="left">Cobblestone</td>
 <td align="left">Stone</td>
 </tr>
-<tr class="odd">
-<td align="left">Netherrack</td>
-<td align="left">Netherbrick</td>
-</tr>
 </tbody>
 </table>
 

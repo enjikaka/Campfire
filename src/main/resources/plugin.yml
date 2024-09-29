@@ -2,4 +2,5 @@ name: Campfire
 main: se.jeremy.minecraft.Campfire
 author: enjikaka
 website: http://minecraft.jeremy.se/Campfire
-version: 3.0.0
+version: 3.1.0
+api-version: '1.13'

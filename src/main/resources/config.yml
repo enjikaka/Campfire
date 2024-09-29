@@ -1,10 +1,2 @@
 dropCoalWhenTreeBurn: true
 fireAboveWoodEnabled: true
-results:
-    GOLD_ORE: GOLD_INGOT
-    IRON_ORE: IRON_INGOT
-    COBBLESTONE: STONE
-    CLAY: HARD_CLAY
-    SAND: GLASS
-    LOG: COAL
-    LOG_2: COAL

@@ -39,13 +39,6 @@ public final class Campfire extends JavaPlugin implements Listener {
 		saveConfig();
 	}
 
-	private ItemStack charcoal() {
-		Coal coal = new Coal();
-		coal.setType(CoalType.CHARCOAL);
-
-		return coal.toItemStack(1);
-	}
-
 	@EventHandler
 	public void onBlockPlace(BlockPlaceEvent event) {
 		Block block = event.getBlockPlaced();
@@ -156,9 +149,9 @@ public final class Campfire extends JavaPlugin implements Listener {
 	}
 
 	@EventHandler
-	public void onBlockBurn(BlockBurnEvent evt) {
-		World world = evt.getBlock().getWorld();
-		Block block = evt.getBlock();
+	public void onBlockBurn(BlockBurnEvent event) {
+		Block block = event.getBlock();
+		World world = block.getWorld();
 
 		if (!isTree(block.getType())) {
 			return;
@@ -166,7 +159,9 @@ public final class Campfire extends JavaPlugin implements Listener {
 
 		if (Campfire.dropCoalWhenTreeBurn) {
 			Location dropLocation = new Location(world, block.getX(), block.getY(), block.getZ());
-			evt.getBlock().getWorld().dropItemNaturally(dropLocation, charcoal());
+			ItemStack itemStack = new ItemStack(Material.CHARCOAL, 1);
+
+			world.dropItemNaturally(dropLocation, itemStack);
 		}
 	}
 
@@ -191,8 +186,6 @@ public final class Campfire extends JavaPlugin implements Listener {
 		while (iter.hasNext()) {
 			Recipe recipe = iter.next();
 			if (!(recipe instanceof FurnaceRecipe))
-				continue;
-			if (player != null && ((FurnaceRecipe) recipe).getInput().getType() != player.getInventory().getItemInMainHand().getType())
 				continue;
 			result = recipe.getResult();
 			break;

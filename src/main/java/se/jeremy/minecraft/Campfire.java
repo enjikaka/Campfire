@@ -1,7 +1,6 @@
 package se.jeremy.minecraft;
 
 import org.bukkit.Bukkit;
-import org.bukkit.CoalType;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
@@ -18,7 +17,6 @@ import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.inventory.FurnaceRecipe;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.Recipe;
-import org.bukkit.material.Coal;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.Iterator;
